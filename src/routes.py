@@ -1,4 +1,3 @@
-
 from flask import request, jsonify, send_file, abort, send_from_directory, render_template
 from werkzeug.utils import secure_filename
 import os
@@ -207,3 +206,14 @@ def course_completion_percentage(course_id):
     completion_percentage = (completed_lessons / total_lessons) * 100
 
     return jsonify({'completion_percentage': completion_percentage})
+
+@app.route('/api/courses/<int:course_id>/refresh', methods=['POST'])
+def refresh_course_lessons(course_id):
+    course = Course.query.get(course_id)
+    if not course:
+        return jsonify({'error': 'Curso não encontrado'}), 404
+    try:
+        list_and_register_lessons(course.path, course_id)
+        return jsonify({'message': 'Curso atualizado com sucesso!'}), 200
+    except Exception as e:
+        return jsonify({'error': f'Erro ao atualizar o curso: {str(e)}'}), 500
